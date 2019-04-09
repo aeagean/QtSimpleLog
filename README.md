@@ -1,0 +1,2 @@
+# QtSimpleLog
+Qt simple log
