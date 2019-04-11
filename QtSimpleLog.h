@@ -1,12 +1,21 @@
 #ifndef QTSIMPLELOG_H
 #define QTSIMPLELOG_H
 
+#include <QtGlobal>
+
+namespace AeaQt {
+const QString logSavePath = "";
+const bool terminalOutputEnable = true;
+const long logSizeLimitation = 10*1000*1000; // default: 10MB
+}
+
 FILE *output = stdout;
 
 #if (QT_VERSION <= QT_VERSION_CHECK(5, 0, 0))
 /* Qt4版本写法 */
 void outputRedirection(QtMsgType type, const char *msg)
 {
+    FILE *output = fopen("output.txt", "a");
     switch (type) {
     case QtDebugMsg:
         fprintf(output, "Debug: %s\n", msg);
@@ -26,6 +35,7 @@ void outputRedirection(QtMsgType type, const char *msg)
 /* Qt5版本写法 */
 void outputRedirection(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+    FILE *output = fopen("output.txt", "a");
     QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
     case QtDebugMsg:
@@ -44,13 +54,13 @@ void outputRedirection(QtMsgType type, const QMessageLogContext &context, const 
         fprintf(output, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
         abort();
     }
+
+    fclose(output);
 }
 #endif
 
 #if (QT_VERSION <= QT_VERSION_CHECK(5, 0, 0))
-#define QT_SIMPLE_LOG do {\
-    output = fopen("output.txt", "a"); \
-    qInstallMsgHandler(outputRedirection); }while(0);
+#define QT_SIMPLE_LOG qInstallMsgHandler(outputRedirection);
 #else
 #define QT_SIMPLE_LOG qInstallMessageHandler(outputRedirection);
 #endif
